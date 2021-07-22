@@ -1,8 +1,65 @@
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import DecentralPollContract from './artifacts/contracts/DecentralPoll.sol/DecentralPoll.json';
+import Button from '@material-ui/core/Button';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import TextField from '@material-ui/core/TextField';
+import Checkbox from '@material-ui/core/Checkbox';
+import Link from '@material-ui/core/Link';
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import Container from '@material-ui/core/Container';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import Paper from '@material-ui/core/Paper';
+
+const useStyles = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
+  form: {
+    width: '100%', // Fix IE 11 issue.
+    marginTop: theme.spacing(3),
+  },
+  submit: {
+    margin: theme.spacing(3, 0, 2),
+  },
+}));
+
+function Copyright() {
+  return (
+    <Typography variant="body2" color="textSecondary" align="center">
+      {'Copyright © '}
+      <Link color="inherit" href="https://material-ui.com/">
+        Decentral.Vote
+      </Link>{' '}
+      {new Date().getFullYear()}
+      {'.'}
+    </Typography>
+  );
+}
+
+function ListItemLink(props) {
+  return <ListItem button component="a" {...props} />;
+}
 
 function DecentralPoll() {
+  const classes = useStyles();
   // store greeting in local state
   const [
     pollInstance,
@@ -27,7 +84,6 @@ function DecentralPoll() {
     selectedVote,
     setSelectedVote,
   ] = useState(null);
-
 
   async function fetchPoll() {
     if (typeof window.ethereum !== 'undefined') {
@@ -88,41 +144,48 @@ function DecentralPoll() {
   function ProposalList(props) {
     const proposals = props.proposals;
     return proposals.map((proposal, index) =>
-      <label style={{display: 'block'}}>
-        <input
-          name="proposal"
-          type="radio"
-          value={index}
-          checked={index == selectedVote}
-          onChange={e => setSelectedVote(e.target.value)} />
-          {ethers.utils.parseBytes32String(proposal)}
-        </label>
+        <FormControlLabel value={index} control={<Radio />} label={ethers.utils.parseBytes32String(proposal)} />
     );
   }
 
   function VoteList(props) {
     let counts = props.counts;
     let proposals = props.proposals;
-    return counts.map((count, index) =>
-    <p>{ethers.utils.parseBytes32String(proposals[index])} - {count.toString()}</p>
-    );
+    let items = counts.map((count, index) => {
+      let label = `${ethers.utils.parseBytes32String(proposals[index])}`;
+      let votes = `Votes: ${count.toString()}`;
+      return <ListItemLink>
+        <ListItemText primary={label} secondary={votes} />
+      </ListItemLink>
+    });
+    return <List component="nav" aria-label="secondary mailbox folders">
+      {items}
+    </List>
   }
 
-  return (
-    <div className="DecentralPoll" style={{border: '1px solid black'}}>
-      <h2>Demo Poll</h2>
-      <label htmlFor="contact-address">Poll Address:</label>
-      <input id="contact-address" size="50" value={pollAddress} onChange={e => setPollAddress(e.target.value)} placeholder="Set Poll Address" />
-      <br />
-      <button onClick={fetchPoll}>Fetch Poll</button>
-      <h3>Poll Name: {pollInstance.pollName}</h3>
-      <h3>Poll Proposals:</h3>
-      <ProposalList proposals={pollInstance.proposals} />
-      <h3>You chose: {selectedVote}</h3>
-      <button onClick={sendVote}>Vote!</button>
-      <h3>Start Time: {pollInstance.startTime.toString()}</h3>
-      <h3>End Time: {pollInstance.endTime.toString()}</h3>
-      <h3>Now: {new Date().toString()}</h3>
+  let details;
+  if (pollInstance.proposals.length) {
+    details = <div>
+      <Paper variant="outlined" style={{ padding: "16px" }}>
+        <Typography component="h2" variant="h6">
+        Poll Name
+        </Typography>
+        <Typography component="h3" variant="h7">
+        {pollInstance.pollName}
+        </Typography>
+        <Typography component="h2" variant="h6">
+        Start Time
+        </Typography>
+        <Typography component="h3" variant="h7">
+        {pollInstance.startTime.toString()}
+        </Typography>
+        <Typography component="h2" variant="h6">
+        End Time
+        </Typography>
+        <Typography component="h3" variant="h7">
+        {pollInstance.endTime.toString()}
+        </Typography>
+      </Paper>
       <h3>
         Has Started?
         {pollInstance.hasPollStarted ? " Yes" : " No"}
@@ -132,8 +195,66 @@ function DecentralPoll() {
         {pollInstance.hasPollEnded ? " Yes" : " No"}
       </h3>
       <h3>Can Vote: {pollInstance.canVote ? " Yes" : " No"}</h3>
+
+      <FormControl component="fieldset">
+        <FormLabel component="legend">Proposals</FormLabel>
+        <RadioGroup
+          aria-label="proposals"
+          name="proposals"
+          value={selectedVote}
+          onChange={e => setSelectedVote(e.target.value)}>
+          <ProposalList proposals={pollInstance.proposals} />
+        </RadioGroup>
+      </FormControl>
+      <h3>You chose: {selectedVote}</h3>
+      <Button variant="contained" color="primary" onClick={sendVote}>
+        Vote!
+      </Button>
+      <Typography component="h1" variant="h5">
+        Results
+      </Typography>
       <VoteList counts={pollInstance.voterCounts} proposals={pollInstance.proposals} />
     </div>
+  }
+
+  return (
+    <Container maxWidth="sm">
+      <CssBaseline />
+      <div className={classes.paper}>
+        <Typography component="h1" variant="h3">
+        Decentral.Vote
+        </Typography>
+        <form className={classes.form} noValidate>
+        <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                id="pollAddress"
+                label="Poll Address"
+                name="pollAddress"
+                value={pollAddress}
+                onChange={e => setPollAddress(e.target.value)}
+              />
+            </Grid>
+          </Grid>
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            className={classes.submit}
+            onClick={fetchPoll}
+          >
+            Fetch Poll
+          </Button>
+        </form>
+        { details }
+      </div>
+      <Box mt={5}>
+        <Copyright />
+      </Box>
+    </Container>
   );
 }
 
