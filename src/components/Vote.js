@@ -19,19 +19,6 @@ import StepLabel from '@material-ui/core/StepLabel';
 
 const steps = ['Poll Lookup', 'Poll Details', 'Submit Vote'];
 
-function getStepContent(step) {
-  switch (step) {
-    case 0:
-      return <PollLookup />;
-    case 1:
-      return <PollLookup />;
-    case 2:
-      return <PollLookup />;
-    default:
-      throw new Error('Unknown step');
-  }
-}
-
 const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(3),
@@ -93,6 +80,19 @@ function Vote() {
     setActiveStep(activeStep - 1);
   };
 
+  function getStepContent(step) {
+    switch (step) {
+      case 0:
+        return <PollLookup pollAddress={pollAddress} />;
+      case 1:
+        return <PollLookup />;
+      case 2:
+        return <PollLookup />;
+      default:
+        throw new Error('Unknown step');
+    }
+  }
+
 
 
   // request access to the user's MetaMask account
@@ -101,14 +101,14 @@ function Vote() {
   // call the smart contract, send a vote
   async function sendVote() {
     if (typeof window.ethereum !== 'undefined') {
-      await requestAccount();
+      // await requestAccount();
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const pollContract = new ethers.Contract(pollAddress, DecentralPollContract.abi, signer);
       try {
         const transaction = await pollContract.vote(selectedVote);
         await transaction.wait();
-        fetchPoll();
+        // fetchPoll();
       } catch (err) {
         console.log("Error: ", err);
       }
