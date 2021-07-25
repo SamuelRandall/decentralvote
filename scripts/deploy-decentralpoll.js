@@ -7,14 +7,18 @@ async function main() {
   // Proposal Name Array
   const proposalNames = [
     ethers.utils.formatBytes32String("Obama"),
-    ethers.utils.formatBytes32String("Romney")
+    ethers.utils.formatBytes32String("Romney"),
+    ethers.utils.formatBytes32String("Romney"),
+    ethers.utils.formatBytes32String("Romney"),
+    ethers.utils.formatBytes32String("Romney"),
+
   ];
 
   // Voter Base Logic
   const voterBaseLogic = ethers.utils.formatBytes32String("National Voting");
 
   // Poll Name
-  const pollName = ethers.utils.formatBytes32String("2012 US Presidential Election");
+  const pollName = ethers.utils.formatBytes32String("New Test Poll");
 
   // Poll Type
   const pollType = ethers.utils.formatBytes32String("One Person One Vote");
